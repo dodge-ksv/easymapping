@@ -16,7 +16,7 @@ Usage
 -----
 .. code-block:: bash
 
-    python3 easymapping.py [-h] [--update] [--overwrite] [file]
+    python3 easymapping.py [--help] [--update] [--overwrite] [--column] [file]
 
 where:
 
@@ -27,8 +27,9 @@ where:
 +-----------------+--------------------------------------------------+
 | -h, --help      | show this help message and exit                  |
 +-----------------+--------------------------------------------------+
-| --update, -u    | download and update mapping file (default False) |
+| -u, --update    | download and update mapping file (default False) |
 +-----------------+--------------------------------------------------+
-| --overwrite, -o | overwrite editable CSV file (default False)      |
+| -o, --overwrite | overwrite editable CSV file (default False)      |
 +-----------------+--------------------------------------------------+
-
+| -c, --column    | mapping column (if not set - map all columns)    |
++-----------------+--------------------------------------------------+

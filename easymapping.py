@@ -4,6 +4,7 @@ import re
 import csv
 import argparse
 import urllib3
+import itertools
 
 __author__ = 'Serhii Kostel'
 
@@ -87,7 +88,20 @@ def load_mapping():
     return mapping
 
 
-def csv_mapping(csv_file, overwrite=False):
+def _column_mapper_fabric(mapping, mapped_column=None):
+    """Column value mapper fabric."""
+    def _map_all(col_num, value):
+        return mapping.get(value.strip(), value)
+
+    def _map_col(col_num, value):
+        if col_num == mapped_column:
+            return mapping.get(value.strip(), value)
+        return value
+
+    return _map_all if mapped_column is None else _map_col
+
+
+def csv_mapping(csv_file, overwrite=False, column=None):
     """Make CSV file with mapped values according to the mapping file."""
     mapped_csv_file = '{0}.emap.csv'.format(os.path.splitext(csv_file)[0])
     mapping = load_mapping()
@@ -98,8 +112,11 @@ def csv_mapping(csv_file, overwrite=False):
             csv_reader = csv.reader(csv_in)
             csv_writer = csv.writer(csv_out, quoting=csv.QUOTE_MINIMAL)
 
+            column_mapper = _column_mapper_fabric(mapping, column)
+
             for num, row in enumerate(csv_reader):
-                csv_writer.writerow([mapping.get(value.strip(), value) for value in row])
+                csv_writer.writerow(list(itertools.starmap(column_mapper, enumerate(row))))
+
                 if num % 1000 == 0:
                     print('.', end='')
 
@@ -108,6 +125,18 @@ def csv_mapping(csv_file, overwrite=False):
     if overwrite:
         print('Overwrite CSV file "{0}"'.format(csv_file))
         os.rename(mapped_csv_file, csv_file)
+
+
+def _check_column_valid(csv_file, column):
+    """Check column number is valid and in the range of CSV row size."""
+    if column < 0:
+        raise ValueError('mapping column must be positive number')
+
+    with open(csv_file, newline='') as csv_in:
+        row_len = len(next(csv.reader(csv_in)))
+
+    if column >= row_len:
+        raise ValueError('mapping column is grater than CSV row size')
 
 
 if __name__ == '__main__':
@@ -125,6 +154,8 @@ if __name__ == '__main__':
                         default=False, help='download and update mapping file (default False)')
     parser.add_argument('--overwrite', '-o', action="store_true",
                         default=False, help='overwrite editable CSV file (default False)')
+    parser.add_argument('--column', '-c', type=int,
+                        default=None, help='mapping column (if not set - map all columns)')
     args = parser.parse_args()
 
     if args.update:
@@ -138,7 +169,10 @@ if __name__ == '__main__':
             print('Wrong CSV file {0}.'.format(args.file))
             exit(1)
 
+        if args.column is not None:
+            _check_column_valid(args.file, args.column)
+
         try:
-            csv_mapping(args.file, args.overwrite)
+            csv_mapping(args.file, args.overwrite, args.column)
         except Exception as err:
             print('Error on CSV mapping: {0}'.format(err))
