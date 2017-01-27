@@ -87,7 +87,7 @@ def load_mapping():
     return mapping
 
 
-def csv_mapping(csv_file, overwrite):
+def csv_mapping(csv_file, overwrite=False):
     """Make CSV file with mapped values according to the mapping file."""
     mapped_csv_file = '{0}.emap.csv'.format(os.path.splitext(csv_file)[0])
     mapping = load_mapping()
