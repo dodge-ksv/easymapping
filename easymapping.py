@@ -31,7 +31,7 @@ def get_local_map_file():
     matched_id = re.match('https://docs\.google\.com/.+/d/([\w\d-]*)/.+', MAPPING_FILE_SHARED_URL)
 
     if not matched_id:
-        raise ValueError('Wring MAPPING_FILE_SHARED_URL value.')
+        raise ValueError('Wrong MAPPING_FILE_SHARED_URL value.')
 
     file_id = matched_id.group()
     return os.path.join(CONFIG_DIR, 'mapping_{0}.csv'.format(file_id))
